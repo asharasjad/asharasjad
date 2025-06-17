@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ashar Asjad - Quantitative Finance</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #00ff41;
+            --secondary: #ff0080;
+            --accent: #00d4ff;
+            --bg: #000000;
+            --bg-secondary: #0a0a0a;
+            --text: #ffffff;
+            --text-dim: #888888;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            cursor: none;
+        }
+
+        /* Custom Cursor */
+        .cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            background: var(--primary);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transition: transform 0.1s ease;
+            box-shadow: 0 0 20px var(--primary);
+        }
+
+        .cursor-trail {
+            position: fixed;
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9998;
+            opacity: 0.7;
+        }
+
+        /* Matrix Background */
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.1;
+        }
+
+        /* Terminal Navigation */
+        .terminal-nav {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid var(--primary);
+            border-radius: 0;
+            padding: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .terminal-nav::before {
+            content: '> ashar_asjad.exe';
+            color: var(--primary);
+            display: block;
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+
+        .nav-menu {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .nav-menu.active {
+            display: flex;
+        }
+
+        .nav-item {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            padding: 5px 0;
+        }
+
+        .nav-item:hover {
+            color: var(--primary);
+            text-shadow: 0 0 10px var(--primary);
+        }
+
+        .nav-item::before {
+            content: '>> ';
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .nav-item:hover::before {
+            opacity: 1;
+        }
+
+        /* Hero Terminal */
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .terminal {
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid var(--primary);
+            width: 90%;
+            max-width: 800px;
+            min-height: 400px;
+            position: relative;
+            box-shadow: 0 0 50px rgba(0, 255, 65, 0.3);
+        }
+
+        .terminal-header {
+            background: var(--primary);
+            color: black;
+            padding: 10px 15px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .terminal-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .terminal-button {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ff5f56;
+        }
+
+        .terminal-button:nth-child(2) {
+            background: #ffbd2e;
+        }
+
+        .terminal-button:nth-child(3) {
+            background: #27ca3f;
+        }
+
+        .terminal-body {
+            padding: 20px;
+            min-height: 350px;
+        }
+
+        .terminal-line {
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .prompt {
+            color: var(--primary);
+        }
+
+        .command {
+            color: var(--accent);
+        }
+
+        .output {
+            color: var(--text);
+            margin-left: 20px;
+        }
+
+        .cursor-blink {
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        /* Sections */
+        .section {
+            min-height: 100vh;
+            padding: 100px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .section-content {
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        /* About Section - Floating Cards */
+        .about-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            perspective: 1000px;
+        }
+
+        .floating-card {
+            background: linear-gradient(135deg, rgba(0, 255, 65, 0.1), rgba(0, 212, 255, 0.1));
+            border: 1px solid var(--primary);
+            padding: 30px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: all 0.5s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .floating-card:hover {
+            transform: rotateX(10deg) rotateY(10deg) translateZ(20px);
+            box-shadow: 0 20px 40px rgba(0, 255, 65, 0.2);
+        }
+
+        .floating-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), var(--accent), var(--secondary));
+            animation: shimmer 2s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { transform: translateX(-100%); }
+            50% { transform: translateX(100%); }
+        }
+
+        .card-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        .skill-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .skill-tag {
+            background: rgba(0, 255, 65, 0.2);
+            border: 1px solid var(--primary);
+            padding: 5px 10px;
+            font-size: 11px;
+            transition: all 0.3s ease;
+        }
+
+        .skill-tag:hover {
+            background: var(--primary);
+            color: black;
+            transform: scale(1.1);
+        }
+
+        /* Projects - Hexagonal Grid */
+        .projects-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .section-title {
+            font-size: 24px;
+            margin-bottom: 50px;
+            text-align: center;
+            color: var(--primary);
+            text-shadow: 0 0 20px var(--primary);
+        }
+
+        .section-title::before {
+            content: '[ ';
+            color: var(--accent);
+        }
+
+        .section-title::after {
+            content: ' ]';
+            color: var(--accent);
+        }
+
+        .hex-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+            max-width: 1200px;
+        }
+
+        .hex-project {
+            background: linear-gradient(135deg, rgba(255, 0, 128, 0.1), rgba(0, 212, 255, 0.1));
+            border: 2px solid transparent;
+            background-clip: padding-box;
+            padding: 30px;
+            position: relative;
+            transition: all 0.5s ease;
+            clip-path: polygon(0% 25%, 0% 75%, 25% 100%, 75% 100%, 100% 75%, 100% 25%, 75% 0%, 25% 0%);
+        }
+
+        .hex-project:hover {
+            transform: scale(1.05) rotate(2deg);
+            box-shadow: 0 0 30px rgba(255, 0, 128, 0.3);
+        }
+
+        .hex-project::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary), var(--accent));
+            z-index: -1;
+            clip-path: polygon(0% 25%, 0% 75%, 25% 100%, 75% 100%, 100% 75%, 100% 25%, 75% 0%, 25% 0%);
+        }
+
+        .project-title {
+            color: var(--secondary);
+            font-size: 16px;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .project-desc {
+            font-size: 12px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            color: var(--text-dim);
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tech-item {
+            background: rgba(0, 255, 65, 0.2);
+            padding: 3px 8px;
+            font-size: 10px;
+            border: 1px solid var(--primary);
+        }
+
+        /* Experience Timeline */
+        .timeline-container {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .timeline-line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--primary), var(--secondary));
+            transform: translateX(-50%);
+        }
+
+        .timeline-item {
+            display: flex;
+            margin-bottom: 50px;
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 0.6s ease;
+        }
+
+        .timeline-item.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .timeline-item:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        .timeline-content {
+            flex: 1;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(0, 255, 65, 0.1), rgba(0, 0, 0, 0.8));
+            border: 1px solid var(--primary);
+            margin: 0 30px;
+            position: relative;
+        }
+
+        .timeline-content::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            width: 0;
+            height: 0;
+            border: 10px solid transparent;
+        }
+
+        .timeline-item:nth-child(odd) .timeline-content::before {
+            right: -20px;
+            border-left-color: var(--primary);
+        }
+
+        .timeline-item:nth-child(even) .timeline-content::before {
+            left: -20px;
+            border-right-color: var(--primary);
+        }
+
+        .timeline-date {
+            color: var(--accent);
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .timeline-title {
+            color: var(--primary);
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .timeline-company {
+            color: var(--secondary);
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        /* Contact Terminal */
+        .contact-terminal {
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid var(--accent);
+            max-width: 600px;
+            margin: 0 auto;
+            box-shadow: 0 0 50px rgba(0, 212, 255, 0.3);
+        }
+
+        .contact-header {
+            background: var(--accent);
+            color: black;
+            padding: 10px 15px;
+            font-weight: bold;
+        }
+
+        .contact-body {
+            padding: 30px;
+        }
+
+        .contact-line {
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .contact-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .contact-item {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid var(--accent);
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .contact-item:hover {
+            background: var(--accent);
+            color: black;
+            transform: translateY(-5px);
+        }
+
+        /* Particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            background: var(--primary);
+            width: 2px;
+            height: 2px;
+            border-radius: 50%;
+            animation: float 10s linear infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Glitch Effect */
+        .glitch {
+            position: relative;
+        }
+
+        .glitch::before,
+        .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .glitch::before {
+            animation: glitch1 2s infinite;
+            color: var(--secondary);
+            z-index: -1;
+        }
+
+        .glitch::after {
+            animation: glitch2 2s infinite;
+            color: var(--accent);
+            z-index: -2;
+        }
+
+        @keyframes glitch1 {
+            0%, 90%, 100% {
+                transform: translate(0);
+            }
+            92% {
+                transform: translate(-2px, 2px);
+            }
+            94% {
+                transform: translate(2px, -2px);
+            }
+            96% {
+                transform: translate(-2px, 2px);
+            }
+            98% {
+                transform: translate(2px, -2px);
+            }
+        }
+
+        @keyframes glitch2 {
+            0%, 90%, 100% {
+                transform: translate(0);
+            }
+            91% {
+                transform: translate(2px, -2px);
+            }
+            93% {
+                transform: translate(-2px, 2px);
+            }
+            95% {
+                transform: translate(2px, -2px);
+            }
+            97% {
+                transform: translate(-2px, 2px);
+            }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .terminal {
+                width: 95%;
+                margin: 10px;
+            }
+
+            .hex-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .timeline-line {
+                left: 20px;
+            }
+
+            .timeline-item {
+                flex-direction: row !important;
+                margin-left: 40px;
+            }
+
+            .timeline-content {
+                margin: 0 0 0 20px;
+            }
+
+            .timeline-content::before {
+                left: -20px !important;
+                border-right-color: var(--primary) !important;
+                border-left-color: transparent !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="cursor"></div>
+    <div class="particles"></div>
+    <canvas class="matrix-bg"></canvas>
+
+    <nav class="terminal-nav" onclick="toggleNav()">
+        <div class="nav-menu" id="navMenu">
+            <a href="#home" class="nav-item">home</a>
+            <a href="#about" class="nav-item">about</a>
+            <a href="#projects" class="nav-item">projects</a>
+            <a href="#experience" class="nav-item">experience</a>
+            <a href="#contact" class="nav-item">contact</a>
+        </div>
+    </nav>
+
+    <section id="home" class="hero">
+        <div class="terminal">
+            <div class="terminal-header">
+                ashar@quantdev:~$ 
+                <div class="terminal-buttons">
+                    <div class="terminal-button"></div>
+                    <div class="terminal-button"></div>
+                    <div class="terminal-button"></div>
+                </div>
+            </div>
+            <div class="terminal-body">
+                <div class="terminal-line">
+                    <span class="prompt">ashar@quantdev:~$</span> <span class="command">whoami</span>
+                </div>
+                <div class="terminal-line">
+                    <span class="output">Ashar Asjad - Quantitative Finance Engineer</span>
+                </div>
+                <div class="terminal-line">
+                    <span class="prompt">ashar@quantdev:~$</span> <span class="command">cat skills.txt</span>
+                </div>
+                <div class="terminal-line">
+                    <span class="output">• Algorithmic Trading Systems</span>
+                </div>
+                <div class="terminal-line">
+                    <span class="output">• Risk Management & Portfolio Optimization</span>
+                </div>
+                <div class="terminal-line">
+                    <span class="output">• Machine Learning for Finance</span>
+                </div>
+                <div class="terminal-line">
+                    <span class="output">• Derivatives Pricing & Modeling</span>
+                </div>
+                <div class="terminal-line">
+                    <span class="prompt">ashar@quantdev:~$</span> <span class="command">./deploy_alpha.sh</span>
+                </div>
+                <div class="terminal-line">
+                    <span class="output">Initializing alpha generation...</span>
+                </div>
+                <div class="terminal-line">
+                    <span class="output">Sharpe Ratio: 2.47 | Max Drawdown: 3.2%</span>
+                </div>
+                <div class="terminal-line">
+                    <span class="output">Status: Ready for deployment</span>
+                </div>
+                <div class="terminal-line">
+                    <span class="prompt">ashar@quantdev:~$</span> <span class="cursor-blink">█</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="about" class="section">
+        <div class="section-content">
+            <h2 class="section-title glitch" data-text="ABOUT">ABOUT</h2>
+            <div class="about-grid">
+                <div class="floating-card">
+                    <h3 class="card-title">>>> CORE_EXPERTISE</h3>
+                    <p>Specialized in developing high-frequency trading algorithms and risk management systems. Expert in mathematical modeling, statistical analysis, and machine learning applications in finance.</p>
+                </div>
+                <div class="floating-card">
+                    <h3 class="card-title">>>> TECHNICAL_STACK</h3>
+                    <div class="skill-grid">
+                        <span class="skill-tag">Python</span>
+                        <span class="skill-tag">C++</span>
+                        <span class="skill-tag">R</span>
+                        <span class="skill-tag">SQL</span>
+                        <span class="skill-tag">TensorFlow</span>
+                        <span class="skill-tag">PyTorch</span>
+                        <span class="skill-tag">QuantLib</span>
+                        <span class="skill-tag">Bloomberg API</span>
+                        <span class="skill-tag">Monte Carlo</span>
+                        <span class="skill-tag">Time Series</span>
+                        <span class="skill-tag">Options Pricing</span>
+                        <span class="skill-tag">VaR Models</span>
+                    </div>
+                </div>
+                <div class="floating-card">
+                    <h3 class="card-title">>>> ACHIEVEMENTS</h3>
+                    <p>• 18% annual returns with 0.8 Sharpe ratio<br>
+                    • 92% accuracy in credit risk modeling<br>
+                    • Published research in quantitative finance<br>
+                    • Built systems processing $100M+ daily volume</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="projects" class="section">
+        <div class="section-content">
+            <div class="projects-container">
+                <h2 class="section-title glitch" data-text="PROJECTS">PROJECTS</h2>
+                <div class="hex-grid">
+                    <div class="hex-project">
+                        <h3 class="project-title">NEURAL_TRADING_ENGINE</h3>
+                        <p class="project-desc">Deep learning model for high-frequency trading using LSTM networks. Processes 50,000+ market events per second with sub-millisecond latency.</p>
+                        <div class="tech-stack">
+                            <span class="tech-item">Python</span>
+                            <span class="tech-item">TensorFlow</span>
+                            <span class="tech-item">Redis</span>
+                            <span class="tech-item">WebSockets</span>
+                        </div>
+                    </div>
+                    <div class="hex-project">
+                        <h3 class="project-title">QUANTUM_RISK_MATRIX</h3>
+                        <p class="project-desc">Advanced portfolio risk management using quantum computing principles. Monte Carlo simulations with 1M+ scenarios for stress testing.</p>
+                        <div class="tech-stack">
+                            <span class="tech-item">C++</span>
+                            <span class="tech-item">CUDA</span>
+                            <span class="tech-item">NumPy</span>
+                            <span class="tech-item">QuantLib</span>
+                        </div>
+                    </div>
+                    <div class="hex-project">
+                        <h3 class="project-title">DERIVATIVE_PRICING_AI</h3>
+                        <p class="project-desc">ML-enhanced Black-Scholes model with real-time Greeks calculation. Handles exotic options with 99.7% pricing accuracy.</p>
+                        <div class="tech-stack">
+                            <span class="tech-item">Python</span>
+                            <span class="tech-item">SciPy</span>
+                            <span class="tech-item">Bloomberg</span>
+                            <span class="tech-item">FastAPI</span>
+                        </div>
+                    </div>
+                    <div class="hex-project">
+                        <h3 class="project-title">SENTIMENT_ARBITRAGE</h3>
+                        <p class="project-desc">NLP-powered sentiment analysis for market prediction. Processes 10K+ news articles daily with transformer models.</p>
+                        <div class="tech-stack">
+                            <span class="tech-item">BERT</span>
+                            <span class="tech-item">PyTorch</span>
+                            <span class="tech-item">Kafka</span>
+                            <span class="tech-item">Docker</span>
+                        </div>
+                    </div>
+                    <div class="hex-project">
+                        <h3 class="project-title">CRYPTO_FLASH_TRADER</h3>
+                        <p class="project-desc">Cross-exchange arbitrage bot with microsecond execution. Automated profit capture across 15+ cryptocurrency exchanges.</p>
+                        <div class="tech-stack">
+                            <span class="tech-item">Go</span>
+                            <span class="tech-item">WebSockets</span>
+                            <span class="tech-item">Redis</span>
+                            <span class="tech-item">Kubernetes</span>
+                        </div>
+                    </div>
+                    <div class="hex-project">
+                        <h3 class="project-title">CREDIT_DEFAULT_NEURAL</h3>
+                        <p class="project-desc">Deep neural network for credit risk assessment. Ensemble model achieving 94% precision in default prediction.</p>
+                        <div class="tech-stack">
+                            <span class="tech-item">XGBoost</span>
+                            <span class="tech-item">Pandas</span>
+                            <span class="tech-item">Sklearn</span>
+                            <span class="tech-item">MLflow</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="experience" class="section">
+        <div class="section-content">
+            <h2 class="section-title glitch" data-text="EXPERIENCE">EXPERIENCE</h2>
+            <div class="timeline-container">
+                <div class="timeline-line"></div>
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <div class="timeline-date">2024.06 - 2024.08</div>
+                        <h3 class="timeline-title">QUANT_RESEARCH_INTERN</h3>
+                        <div class="timeline-company">Goldman Sachs</div>
+                        <p>Developed stochastic volatility models for exotic derivatives. Built real-time risk monitoring dashboard processing $2B+ daily notional.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <div class="timeline-date">2023.06 - 2024.08</div>
+                        <h3 class="timeline-title">INVESTMENT_BANKING_ANALYST</h3>
+                        <div class="timeline-company">Morgan Stanley</div>
+                        <p>Executed $500M+ M&A transactions. Built automated DCF models with sensitivity analysis for technology sector deals.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <div class="timeline-date">2023.06 - 2023.08</div>
+                        <h3 class="timeline-title">FINANCIAL_MODELING_INTERN</h3>
+                        <div class="timeline-company">JP Morgan Chase</div>
+                        <p>Developed credit risk models using machine learning. Implemented stress testing framework for $10B+ loan portfolio.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <div class="timeline-date">2022.09 - 2023.05</div>
+                        <h3 class="timeline-title">RESEARCH_ASSISTANT</h3>
+                        <div class="timeline-company">University Finance Lab</div>
+                        <p>Published research on market microstructure and algorithmic trading. Co-authored paper on high-frequency trading impact.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="section">
+        <div class="section-content">
+            <h2 class="section-title glitch" data-text="CONTACT">CONTACT</h2>
+            <div class="contact-terminal">
+                <div class="contact-header">contact@ashar_asjad.dev</div>
+                <div class="contact-body">
+                    <div class="contact-line">
+                        <span class="prompt">guest@portfolio:~$</span> <span class="command">connect ashar_asjad</span>
+                    </div>
+                    <div class="contact-line">
+                        <span class="output">Establishing secure connection...</span>
+                    </div>
+                    <div class="contact-line">
+                        <span class="output">Ready to discuss quantitative finance opportunities</span>
+                    </div>
+                    <div class="contact-info">
+                        <div class="contact-item">
+                            <div>EMAIL</div>
+                            <div>ashar.asjad@quant.dev</div>
+                        </div>
+                        <div class="contact-item">
+                            <div>LINKEDIN</div>
+                            <div>/in/ashar-asjad-quant</div>
+                        </div>
+                        <div class="contact-item">
+                            <div>GITHUB</div>
+                            <div>/ashar-quant-trader</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Custom Cursor
+        const cursor = document.querySelector('.cursor');
+        const trails = [];
+        
+        for (let i = 0; i < 10; i++) {
+            const trail = document.createElement('div');
+            trail.className = 'cursor-trail';
+            document.body.appendChild(trail);
+            trails.push(trail);
+        }
+
+        let mouseX = 0, mouseY = 0;
+        
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            cursor.style.left = mouseX - 10 + 'px';
+            cursor.style.top = mouseY - 10 + 'px';
+        });
+
+        // Cursor Trails
+        setInterval(() => {
+            trails.forEach((trail, index) => {
+                setTimeout(() => {
+                    trail.style.left = mouseX - 3 + 'px';
+                    trail.style.top = mouseY - 3 + 'px';
+                }, index * 50);
+            });
+        }, 50);
+
+        // Matrix Background
+        const canvas = document.querySelector('.matrix-bg');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        const chars = '01';
+        const charArray = chars.split('');
+        const fontSize = 14;
+        const columns = canvas.width / fontSize;
+        const drops = [];
+        
+        for (let x = 0; x < columns; x++) {
+            drops[x] = 1;
+        }
+        
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#00ff41';
+            ctx.font = fontSize + 'px JetBrains Mono';
+            
+            for (let i = 0; i < drops.length; i++) {
+                const text = charArray[Math.floor(Math.random() * charArray.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                drops[i]++;
+            }
+        }
+        
+        setInterval(drawMatrix, 100);
+
+        // Particles
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + 'vw';
+            particle.style.animationDelay = Math.random() * 10 + 's';
+            particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+            document.querySelector('.particles').appendChild(particle);
+            
+            setTimeout(() => {
+                particle.remove();
+            }, 20000);
+        }
+        
+        setInterval(createParticle, 500);
+
+        // Navigation Toggle
+        function toggleNav() {
+            const navMenu = document.getElementById('navMenu');
+            navMenu.classList.toggle('active');
+        }
+
+        // Smooth Scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                    document.getElementById('navMenu').classList.remove('active');
+                }
+            });
+        });
+
+        // Timeline Animation
+        const timelineItems = document.querySelectorAll('.timeline-item');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        timelineItems.forEach(item => {
+            observer.observe(item);
+        });
+
+        // Terminal Typing Effect
+        const terminalLines = document.querySelectorAll('.terminal-line');
+        let lineIndex = 0;
+        
+        function showNextLine() {
+            if (lineIndex < terminalLines.length) {
+                terminalLines[lineIndex].style.opacity = '1';
+                lineIndex++;
+                setTimeout(showNextLine, 300);
+            }
+        }
+        
+        // Initially hide all lines except the first
+        terminalLines.forEach((line, index) => {
+            if (index > 0) line.style.opacity = '0';
+        });
+        
+        // Start typing animation after page load
+        window.addEventListener('load', () => {
+            setTimeout(showNextLine, 1000);
+        });
+
+        // Resize Canvas on Window Resize
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Hover Effects for Project Cards
+        document.querySelectorAll('.hex-project').forEach(project => {
+            project.addEventListener('mouseenter', () => {
+                project.style.filter = 'hue-rotate(90deg)';
+            });
+            
+            project.addEventListener('mouseleave', () => {
+                project.style.filter = 'hue-rotate(0deg)';
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 # 👋 Hi
 
-I'm **Ashar**, currently in my final year studying **Mathematics for Data Science**. My work and interests lie at the intersection of mathematics and modern computational methods.
+I'm **Ashar**, just graduated from my undergrad studying **Mathematics for Data Science**. My work and interests lie at the intersection of mathematics and modern computational methods.
 
 ## About Me
 
